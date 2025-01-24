@@ -360,8 +360,10 @@ def inlet_calc(row:BladeRow):
         row (BladeRow): _description_
     """
     area = row.Vm.copy()*0
+    # Estimate the density
     row.T = row.T0
     row.P = row.P0 
+    row.rho = row.P/(row.T*row.R)
     total_area = 0 
     for _ in range(5): # Lets converge the Mach and Total and Static pressures
         for j in range(1,len(row.percent_hub_shroud)):
@@ -381,7 +383,7 @@ def inlet_calc(row:BladeRow):
         row.Vr = row.Vm*np.sin(row.phi)
         row.Vt = row.Vm*np.cos(row.phi)*np.tan(row.alpha2)
         row.V = np.sqrt(row.Vt**2+row.Vm**2)
-           
+        # Fine tune the Temperature and Pressure and density
         row.M = row.V/np.sqrt(row.gamma*row.R*row.T)
         row.T = row.T0 * 1/(1+(row.gamma-1)/2*row.M**2)
         row.P = row.P0 * (row.T/row.T0)**(row.gamma/(row.gamma-1))

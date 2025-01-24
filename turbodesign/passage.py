@@ -59,7 +59,7 @@ class Passage:
         """Gets the streamline at a certain percent radius 
 
         Args:
-            t_radial (float): _description_
+            t_radial (float): percent between hub and shroud
 
         Returns:
             Tuple containing:

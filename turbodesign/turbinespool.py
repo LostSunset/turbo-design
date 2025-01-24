@@ -239,7 +239,7 @@ class TurbineSpool(Spool):
                 else:
                     for i in range(1,len(blade_rows)-1):
                         for j in range(self.num_streamlines):
-                            blade_rows[i].P[j] = P[i][j]*x0[(i-1)*self.num_streamlines+j]    # x0 size = num_streamlines -1 
+                            blade_rows[i].P[j] = P[j]*x0[(i-1)*self.num_streamlines+j]    # x0 size = num_streamlines -1 
                     
                 calculate_massflows(blade_rows,True)
                 print(x0)
@@ -247,7 +247,7 @@ class TurbineSpool(Spool):
             except:
                 for i in range(1,len(blade_rows)-1):
                     for j in range(self.num_streamlines):
-                        blade_rows[i].P[j] = P[i][j]
+                        blade_rows[i].P[j] = P[j]
                 calculate_massflows(blade_rows,True)
                 return 10
         # Break apart the rows to stages
@@ -271,11 +271,15 @@ class TurbineSpool(Spool):
         self.blade_rows[0].massflow = np.linspace(0,1,self.num_streamlines)*self.blade_rows[1].total_massflow_no_coolant
         inlet_calc(self.blade_rows[0]) # adjust the inlet to match massflow 
         
-        for _ in range(2):
-            adjust_streamlines(self.blade_rows[:-1],self.passage)
+        if self.adjust_streamlines:
+            for _ in range(2):
+                adjust_streamlines(self.blade_rows[:-1],self.passage)
+                self.blade_rows[-1].transfer_quantities(self.blade_rows[-2])
+                self.blade_rows[-1].P = self.blade_rows[-1].get_static_pressure(self.blade_rows[-1].percent_hub_shroud)
+                balance_massflows(x,self.blade_rows[:-1],self.blade_rows[0].P0,self.blade_rows[-1].P) 
+        else:
             self.blade_rows[-1].transfer_quantities(self.blade_rows[-2])
             self.blade_rows[-1].P = self.blade_rows[-1].get_static_pressure(self.blade_rows[-1].percent_hub_shroud)
-            balance_massflows(x,self.blade_rows[:-1],self.blade_rows[0].P0,self.blade_rows[-1].P) 
         err = calculate_error(self.blade_rows[:-1])
         print(f"Massflow convergenced error:{err}")
             
