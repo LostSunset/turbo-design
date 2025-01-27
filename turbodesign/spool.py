@@ -87,6 +87,8 @@ class Spool:
             new_gas (ct.Solution.Solution): New gas mixture
         """
         self._fluid = newFluid
+        for i in range(len(self.blade_rows)):
+            self.blade_rows[i].fluid = self.fluid
 
     @property
     def adjust_streamlines(self) -> bool:
