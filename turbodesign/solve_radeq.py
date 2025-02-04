@@ -35,3 +35,4 @@ def adjust_streamlines(blade_rows:List[BladeRow],passage:Passage):
             row.phi[i] = float(interp1d(t_streamline,phi)(row.axial_location))
             row.rm[i] = float(interp1d(t_streamline,rm)(row.axial_location))
             row.r[i] = float(interp1d(t_streamline,r)(row.axial_location))
+            row.x[i] = float(interp1d(t_streamline,x_streamline)(row.axial_location))

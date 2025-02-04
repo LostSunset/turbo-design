@@ -28,6 +28,7 @@ class Spool:
     _fluid: Solution = Solution("air.yaml")
 
     massflow_constraint: MassflowConstraint
+    _adjust_streamlines:bool = True
     
     # Inlet Conditions 
     def __init__(self,passage:Passage,
@@ -86,7 +87,26 @@ class Spool:
             new_gas (ct.Solution.Solution): New gas mixture
         """
         self._fluid = newFluid
+        for i in range(len(self.blade_rows)):
+            self.blade_rows[i].fluid = self.fluid
 
+    @property
+    def adjust_streamlines(self) -> bool:
+        """Variable that determines whether or not to try and adjust the streamlines to balance massflow
+        This can be a source of failure. Setting it to false may help with debugging. 
+
+        Returns:
+            bool: True = streamlines are adjusted after calculation; False = No changes in streamlines
+        """
+        return self._adjust_streamlines
+    
+    @adjust_streamlines.setter
+    def adjust_streamlines(self,val:bool):
+        """Variable that determines whether or not to try and adjust the streamlines to balance massflow
+        This can be a source of failure. Setting it to false may help with debugging. 
+        """
+        self._adjust_streamlines = val
+    
 
     def set_blade_row_rpm(self,index:int,rpm:float):
         """sets the rpm of a particular blade row"""    
@@ -229,7 +249,7 @@ class Spool:
             x_start = 0
             y_max = 0; y_min = 0
             plt.figure(num=1,clear=True)
-            for i in range(1,len(self.blade_rows)):
+            for i in range(1,len(self.blade_rows)-1): # Don't plot inlet or outlet 
                 row = self.blade_rows[i]
                 x_end = x_start + row.Vx.mean()
                 dx = x_end - x_start

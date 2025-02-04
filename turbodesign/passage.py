@@ -59,7 +59,7 @@ class Passage:
         """Gets the streamline at a certain percent radius 
 
         Args:
-            t_radial (float): _description_
+            t_radial (float): percent between hub and shroud
 
         Returns:
             Tuple containing:
@@ -186,7 +186,7 @@ class Passage:
         
         plt.figure(num=1,clear=True,dpi=150,figsize=(15,10))
         plt.plot(self.xhub_pts,self.rhub_pts,label='hub',linestyle='solid',linewidth=2,color='black')
-        plt.plot(self.xshroud_pts,self.rshroud_pts,label='hub',linestyle='solid',linewidth=2,color='black')
+        plt.plot(self.xshroud_pts,self.rshroud_pts,label='shroud',linestyle='solid',linewidth=2,color='black')
         for p in percent_axial:
             cut,_,_ = self.get_cutting_line(p)
             x,r = cut.get_point(np.linspace(0,1,10))

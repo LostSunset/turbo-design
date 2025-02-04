@@ -4,6 +4,7 @@ import math
 import numpy.typing as npt
 from .bladerow import BladeRow, compute_gas_constants
 from .enums import RowType, LossType
+from scipy.integrate import trapezoid
 
 def T0_coolant_weighted_average(row:BladeRow) -> float:
     """Calculate the new weighted Total Temperature array considering coolant
@@ -99,7 +100,7 @@ def compute_power(row:BladeRow,upstream:BladeRow) -> None:
         row.eta_static = row.power/ (row.massflow[-1]*row.Cp*(upstream.T0.mean()-row.T0_is.mean()))
         row.eta_total = row.power / (row.massflow[-1]*row.Cp * (upstream.T0.mean()-row.T0_is.mean()))
         row.stage_loading = row.Cp*(upstream.T0.mean() - row.T0.mean())/row.U.mean()**2
-        row.euler_power = (row.massflow[-1]*((row.U+upstream.U)/2).mean()*(upstream.Vt-row.Vt).mean())
+        row.euler_power = row.massflow[-1]* (upstream.U*upstream.Vt - row.U*row.Vt).mean()
     
 def compute_quantities(row:BladeRow,upstream:BladeRow):
     """Calculation of all quantites after radial equilibrium has been solved assuming we know the static pressure at the exit.
@@ -360,8 +361,10 @@ def inlet_calc(row:BladeRow):
         row (BladeRow): _description_
     """
     area = row.Vm.copy()*0
+    # Estimate the density
     row.T = row.T0
     row.P = row.P0 
+    row.rho = row.P/(row.T*row.R)
     total_area = 0 
     for _ in range(5): # Lets converge the Mach and Total and Static pressures
         for j in range(1,len(row.percent_hub_shroud)):
@@ -381,7 +384,7 @@ def inlet_calc(row:BladeRow):
         row.Vr = row.Vm*np.sin(row.phi)
         row.Vt = row.Vm*np.cos(row.phi)*np.tan(row.alpha2)
         row.V = np.sqrt(row.Vt**2+row.Vm**2)
-           
+        # Fine tune the Temperature and Pressure and density
         row.M = row.V/np.sqrt(row.gamma*row.R*row.T)
         row.T = row.T0 * 1/(1+(row.gamma-1)/2*row.M**2)
         row.P = row.P0 * (row.T/row.T0)**(row.gamma/(row.gamma-1))
